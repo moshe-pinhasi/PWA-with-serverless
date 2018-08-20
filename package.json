@@ -10,16 +10,15 @@
     "test:e2e": "vue-cli-service test:e2e"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "firebase": "^5.4.0",
     "lodash": "^4.17.10",
     "material-design-lite": "^1.3.0",
     "register-service-worker": "^1.0.0",
     "vue": "^2.5.17",
-    "vue-resource": "^1.5.1",
     "vue-router": "^3.0.1",
     "vuefire": "^1.4.5",
-    "vuex": "^3.0.1",
-    "xml-parser": "^1.2.1"
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.1",

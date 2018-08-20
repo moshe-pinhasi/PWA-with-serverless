@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import parse from "xml-parser";
+import axios from "axios";
 
 export default {
   data() {
@@ -37,12 +37,10 @@ export default {
     };
   },
   mounted() {
-    this.$http
-      .get("https://thecatapi.com/api/images/get?format=xml&results_per_page=1")
-      .then(response => {
-        this.catUrl = parse(response.body).root.children["0"].children[
-          "0"
-        ].children["0"].children["0"].content;
+    axios
+      .get("https://thecatapi.com/api/images/get?format=xml&type=gif")
+      .then(res => {
+        this.catUrl = res.data.split("<url>")[1].split("</url>")[0];
       });
   },
   methods: {
