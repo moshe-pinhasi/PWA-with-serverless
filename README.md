@@ -1,17 +1,11 @@
 # A progressive web application with vue-js using cli3
 
-the code based on [this](https://blog.sicara.com/a-progressive-web-application-with-vue-js-webpack-material-design-part-1-c243e2e6e402) article:
+the code based on [this](https://blog.sicara.com/a-progressive-web-application-with-vue-js-webpack-material-design-part-1-c243e2e6e402) article.
 
 ## Project setup
 
 ```
 npm install
-```
-
-### Compiles and hot-reloads for development
-
-```
-npm run serve
 ```
 
 ### Compiles and minifies for production
@@ -51,3 +45,7 @@ npm run test:unit
 ```
 npm run test:e2e
 ```
+
+## See the demo
+
+[here](https://moshe-pinhasi.github.io/pwa-with-vue-cli3/#/)
