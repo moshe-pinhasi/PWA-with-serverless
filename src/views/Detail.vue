@@ -26,16 +26,28 @@
 import { find } from "lodash";
 
 export default {
-  data() {
-    return {
-      cat: {}
-    };
+  computed: {
+    cat() {
+      return this.getCat();
+    }
   },
-  mounted() {
-    this.cat = find(
-      this.$root.cat,
-      cat => cat[".key"] === this.$route.params.id
-    );
+  methods: {
+    getCat() {
+      if (navigator.onLine) {
+        const cat = find(
+          this.$root.cat,
+          cat => cat[".key"] === this.$route.params.id
+        );
+        return cat;
+      } else {
+        const cats = this.loadCatsFromCache();
+        const cat = find(cats, cat => cat[".key"] === this.$route.params.id);
+        return cat;
+      }
+    },
+    loadCatsFromCache() {
+      return JSON.parse(localStorage.getItem("cats"));
+    }
   }
 };
 </script>

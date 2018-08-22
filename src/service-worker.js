@@ -1,61 +1,47 @@
-(function () {
-  "use strict";
+/**
+ * Welcome to your Workbox-powered service worker!
+ *
+ * You'll need to register this file in your web app and you should
+ * disable HTTP caching for this file too.
+ * See https://goo.gl/nhQhGp
+ *
+ * The rest of the code is auto-generated. Please don't update this file
+ * directly; instead, make changes to your Workbox build configuration
+ * and re-run your build process.
+ * See https://goo.gl/2aRDsh
+ */
+// const workbox = window.workbox;
 
-  // Check to make sure service workers are supported in the current browser,
-  // and that the current page is accessed from a secure origin. Using a
-  // service worker from an insecure origin will trigger JS console errors.
-  var isLocalhost = Boolean(
-    window.location.hostname === "localhost" ||
-      // [::1] is the IPv6 localhost address.
-      window.location.hostname === "[::1]" ||
-      // 127.0.0.1/8 is considered localhost for IPv4.
-      window.location.hostname.match(
-        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-      )
-  );
+workbox.core.setCacheNameDetails({ prefix: "cropchat" });
 
-  window.addEventListener("load", function () {
-    if (
-      "serviceWorker" in navigator &&
-      (window.location.protocol === "https:" || isLocalhost)
-    ) {
-      navigator.serviceWorker
-        .register("service-worker.js")
-        .then(function (registration) {
-          // updatefound is fired if service-worker.js changes.
-          registration.onupdatefound = function () {
-            // updatefound is also fired the very first time the SW is installed,
-            // and there's no need to prompt for a reload at that point.
-            // So check here to see if the page is already controlled,
-            // i.e. whether there's an existing service worker.
-            if (navigator.serviceWorker.controller) {
-              // The updatefound event implies that registration.installing is set
-              var installingWorker = registration.installing;
+/**
+ * The workboxSW.precacheAndRoute() method efficiently caches and responds to
+ * requests for URLs in the manifest.
+ * See https://goo.gl/S9QRab
+ */
 
-              installingWorker.onstatechange = function () {
-                switch (installingWorker.state) {
-                  case "installed":
-                    // At this point, the old content will have been purged and the
-                    // fresh content will have been added to the cache.
-                    // It's the perfect time to display a "New content is
-                    // available; please refresh." message in the page's interface.
-                    break;
+self.__precacheManifest = [].concat(self.__precacheManifest || []);
+workbox.precaching.suppressWarnings();
+workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-                  case "redundant":
-                    throw new Error(
-                      "The installing " + "service worker became redundant."
-                    );
+workbox.routing.registerRoute(
+  new RegExp("https://cropchat-95fa2.firebaseio.com"),
+  workbox.strategies.networkFirst(),
+  "GET"
+);
+workbox.routing.registerRoute(
+  new RegExp("https://thecatapi.com/api"),
+  workbox.strategies.networkFirst(),
+  "GET"
+);
+workbox.routing.registerRoute(
+  new RegExp("https://code.getmdl.io"),
+  workbox.strategies.networkFirst(),
+  "GET"
+);
 
-                  default:
-                  // Ignore
-                }
-              };
-            }
-          };
-        })
-        .catch(function (e) {
-          console.error("Error during service worker registration:", e);
-        });
-    }
-  });
-})();
+workbox.routing.registerRoute(
+  new RegExp("https://25.media.tumblr.com"),
+  workbox.strategies.networkFirst(),
+  "GET"
+);
