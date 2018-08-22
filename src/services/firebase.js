@@ -8,8 +8,13 @@ var config = {
   storageBucket: "cropchat-95fa2.appspot.com",
   messagingSenderId: "238121609237"
 };
+
 firebase.initializeApp(config);
 
+const storage = firebase.storage();
+const database = firebase.database();
+
 export default {
-  database: firebase.database()
+  database,
+  storage
 };

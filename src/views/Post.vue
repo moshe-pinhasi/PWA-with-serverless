@@ -3,7 +3,9 @@
     <div class="mdl-grid">
       <div class="mdl-cell mdl-cell--8-col">
         <div class="card-image__picture">
-          <img :src="this.catUrl" />
+          <div v-if="loading">Loading...</div>
+          <img v-else
+               :src="this.catUrl" />
         </div>
       </div>
       <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet">
@@ -16,7 +18,7 @@
                  class="mdl-textfield__label">Describe me</label>
         </div>
         <div class="actions">
-          <a @click.prevent="postCat"
+          <a @click.prevent="post"
              class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
             POST A CAT
           </a>
@@ -29,30 +31,37 @@
 <script>
 import axios from "axios";
 
+import postCat from "@/mixins/postCat";
+
 export default {
   data() {
     return {
       catUrl: null,
-      title: ""
+      title: "",
+      loading: false
     };
   },
+  mixins: [postCat],
   mounted() {
+    // API key: e66a5fe3-80ac-44a8-b4ac-f06111b49e21
+    // user_id :v07egf
+
+    axios.defaults.headers.common["Content-Type"] = "application/json";
+    axios.defaults.headers.common["x-api-key"] =
+      "e66a5fe3-80ac-44a8-b4ac-f06111b49e21";
+
+    this.loading = true;
     axios
-      .get("https://thecatapi.com/api/images/get?format=xml&type=gif")
+      .get("https://api.thecatapi.com/v1/images/search")
       .then(res => {
-        this.catUrl = res.data.split("<url>")[1].split("</url>")[0];
-      });
+        this.catUrl = res.data[0].url;
+        this.loading = false;
+      })
+      .catch(err => console.log(err));
   },
   methods: {
-    postCat() {
-      this.$root.$firebaseRefs.cat
-        .push({
-          url: this.catUrl,
-          comment: this.title,
-          info: "Posted by Charles on Tuesday",
-          created_at: -1 * new Date().getTime()
-        })
-        .then(this.$router.push("/"));
+    post() {
+      this.postCat(this.catUrl, this.title).then(this.$router.push("/"));
     }
   }
 };
