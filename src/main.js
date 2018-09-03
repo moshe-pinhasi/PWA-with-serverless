@@ -6,6 +6,7 @@ import Vuefire from "vuefire";
 import firebase from "./services/firebase";
 
 import "./registerServiceWorker";
+import "./services/notifications";
 
 Vue.use(Vuefire);
 Vue.config.productionTip = false;

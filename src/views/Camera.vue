@@ -1,14 +1,14 @@
 <template>
-    <div class="camera-modal">
-        <video ref="video"
-               class="camera-stream" />
-        <div class="camera-modal-container">
-            <span @click="capture"
-                  class="take-picture-button take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
-                <i class="material-icons">camera</i>
-            </span>
-        </div>
+  <div class="camera-modal">
+    <video ref="video"
+           class="camera-stream" />
+    <div class="camera-modal-container">
+      <span @click="capture"
+            class="take-picture-button take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored">
+        <i class="material-icons">camera</i>
+      </span>
     </div>
+  </div>
 </template>
 
 <script>
@@ -22,6 +22,19 @@ export default {
     };
   },
   mixins: [postCat],
+  created() {
+    // if ("Notification" in window) {
+    //   console.log("Notification is supported!");
+    //   Notification.requestPermission(results => {
+    //     console.log(results);
+    //     if (results === "denied") {
+    //       console.log("notifications permisstions denied!");
+    //       return;
+    //     }
+    //     new Notification("Test!");
+    //   });
+    // }
+  },
   mounted() {
     navigator.mediaDevices
       .getUserMedia({ video: true })
@@ -51,8 +64,22 @@ export default {
             // https://firebasestorage.googleapis.com/v0/b/cropchat-95fa2.appspot.com/o/images%2Fpicture-1534942093646?alt=media&token=a2296216-7e5a-4525-aa2d-3512d4e0edef
             // https://firebasestorage.googleapis.com/v0/b/cropchat-95fa2.appspot.com/o/images/picture-1534942093646?alt=media&token=a2296216-7e5a-4525-aa2d-3512d4e0edef
           )
-          .then(url => this.postCat(url, "Hello"))
-          .then(this.$router.push("/"));
+          .then(url => {
+            return this.postCat(url, "Hello");
+          })
+          // .then(() => {
+          //   var config = {
+          //     headers: { "Access-Control-Allow-Origin": "*" }
+          //   };
+          //   return axios.get(
+          //     "https://us-central1-cropchat-95fa2.cloudfunctions.net/createPost",
+          //     config
+          //   );
+          // })
+          // .then(res => console.log(res.data))
+          .then(() => {
+            this.$router.push("/");
+          });
       });
     }
   },

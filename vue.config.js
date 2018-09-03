@@ -1,5 +1,5 @@
 module.exports = {
-  baseUrl: process.env.NODE_ENV === "production" ? "/pwa-with-vue-cli3/" : "/",
+  // baseUrl: process.env.NODE_ENV === "production" ? "/pwa-with-vue-cli3/" : "/",
   pwa: {
     workboxPluginMode: "InjectManifest",
     workboxOptions: {

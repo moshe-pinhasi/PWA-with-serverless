@@ -49,3 +49,6 @@ npm run test:e2e
 ## See the demo
 
 [here](https://moshe-pinhasi.github.io/pwa-with-vue-cli3/#/)
+
+## on localhost you can run the chrome with ssl using the command:
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --user-data-dir=/tmp/foo --ignore-certificate-errors --unsafely-treat-insecure-origin-as-secure=https://localhost:8080
