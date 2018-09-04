@@ -90,7 +90,7 @@ self.addEventListener("push", event => {
 
   var data = {
     title: "New cat Added!",
-    content: "you can see the new cat by clikcing...",
+    content: "Check it out now",
     openUrl: "/"
   };
 

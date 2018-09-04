@@ -1,5 +1,7 @@
 <template>
   <div class="camera-modal">
+    <div v-if="posting">Posting...</div>
+    <div v-if="error">Couldn't add the post, try again later</div>
     <video ref="video"
            class="camera-stream" />
     <div class="camera-modal-container">
@@ -12,29 +14,17 @@
 </template>
 
 <script>
-import firebaseService from "@/services/firebase";
 import postCat from "@/mixins/postCat";
 
 export default {
   data() {
     return {
-      mediaStream: null
+      mediaStream: null,
+      posting: false,
+      error: false
     };
   },
   mixins: [postCat],
-  created() {
-    // if ("Notification" in window) {
-    //   console.log("Notification is supported!");
-    //   Notification.requestPermission(results => {
-    //     console.log(results);
-    //     if (results === "denied") {
-    //       console.log("notifications permisstions denied!");
-    //       return;
-    //     }
-    //     new Notification("Test!");
-    //   });
-    // }
-  },
   mounted() {
     navigator.mediaDevices
       .getUserMedia({ video: true })
@@ -47,38 +37,24 @@ export default {
   },
   methods: {
     capture() {
+      this.error = false;
+      this.posting = true;
       const mediaStreamTrack = this.mediaStream.getVideoTracks()[0];
       const imageCapture = new window.ImageCapture(mediaStreamTrack);
       const imageName = `picture-${new Date().getTime()}`;
       return imageCapture.takePhoto().then(blob => {
-        firebaseService.storage
-          .ref()
-          .child(`images/${imageName}`)
-          .put(blob)
-          .then(
-            () =>
-              firebaseService.storage
-                .ref("images")
-                .child(imageName)
-                .getDownloadURL()
-            // https://firebasestorage.googleapis.com/v0/b/cropchat-95fa2.appspot.com/o/images%2Fpicture-1534942093646?alt=media&token=a2296216-7e5a-4525-aa2d-3512d4e0edef
-            // https://firebasestorage.googleapis.com/v0/b/cropchat-95fa2.appspot.com/o/images/picture-1534942093646?alt=media&token=a2296216-7e5a-4525-aa2d-3512d4e0edef
-          )
+        this.uploadImage(blob, imageName)
           .then(url => {
             return this.postCat(url, "Hello");
           })
-          // .then(() => {
-          //   var config = {
-          //     headers: { "Access-Control-Allow-Origin": "*" }
-          //   };
-          //   return axios.get(
-          //     "https://us-central1-cropchat-95fa2.cloudfunctions.net/createPost",
-          //     config
-          //   );
-          // })
-          // .then(res => console.log(res.data))
           .then(() => {
+            this.posting = false;
             this.$router.push("/");
+          })
+          .catch(err => {
+            console.error("Camera: ", err);
+            this.posting = false;
+            this.error = true;
           });
       });
     }

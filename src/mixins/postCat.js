@@ -1,16 +1,16 @@
 import axios from "axios";
+import firebaseService from "@/services/firebase";
+import config from "../../config";
+const firebaseConfig = config["firebase"];
 
 const postCat = {
   methods: {
     postCat(catUrl, title) {
-      return axios.post(
-        "https://us-central1-cropchat-95fa2.cloudfunctions.net/createPost",
-        {
-          url: catUrl,
-          comment: title,
-          info: "Posted by Charles on Tuesday"
-        }
-      );
+      return axios.post(firebaseConfig.functions.createPostURL, {
+        url: catUrl,
+        comment: title,
+        info: "Posted by Charles on Tuesday"
+      });
 
       // example how you can post directly to db using the firebase ($firebaseRefs.cat - see in main.js)
       // return this.$root.$firebaseRefs.cat.push({
@@ -19,6 +19,18 @@ const postCat = {
       //   info: "Posted by Charles on Tuesday",
       //   created_at: -1 * new Date().getTime()
       // });
+    },
+    uploadImage(blob, imageName) {
+      return firebaseService.storage
+        .ref()
+        .child(`images/${imageName}`)
+        .put(blob)
+        .then(() =>
+          firebaseService.storage
+            .ref("images")
+            .child(imageName)
+            .getDownloadURL()
+        );
     }
   }
 };

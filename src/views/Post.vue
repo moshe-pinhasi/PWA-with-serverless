@@ -30,8 +30,10 @@
 
 <script>
 import axios from "axios";
-
+import config from "../../config";
 import postCat from "@/mixins/postCat";
+
+const catApiConfig = config["catApi"];
 
 export default {
   data() {
@@ -43,16 +45,12 @@ export default {
   },
   mixins: [postCat],
   mounted() {
-    // API key: e66a5fe3-80ac-44a8-b4ac-f06111b49e21
-    // user_id :v07egf
-
     axios.defaults.headers.common["Content-Type"] = "application/json";
-    axios.defaults.headers.common["x-api-key"] =
-      "e66a5fe3-80ac-44a8-b4ac-f06111b49e21";
+    axios.defaults.headers.common["x-api-key"] = catApiConfig.apiKey;
 
     this.loading = true;
     axios
-      .get("https://api.thecatapi.com/v1/images/search")
+      .get(catApiConfig.searchURL)
       .then(res => {
         this.catUrl = res.data[0].url;
         this.loading = false;

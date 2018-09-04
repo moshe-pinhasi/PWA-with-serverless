@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+import config from "../../config";
+const webpush = config["webpush"];
+const firebase = config["firebase"];
 
 if ("Notification" in window) {
   console.log("Notification is supported!");
@@ -26,8 +29,7 @@ function configurePushSub() {
     .then(sub => {
       if (sub !== null) return;
 
-      var vapidPublicKey =
-        "BLc-s9wisrfhmLNoVKa3mqvsv7VxNZU5qFYmR3Wy-1noDQLUlaXwISm5xNx3JvHhUFjGL_sYl8DpKbRl6mZdq1M";
+      var vapidPublicKey = webpush.publicKey;
       // create new one. when creating new one need to protect the push messages
       var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
       return reg.pushManager.subscribe({
@@ -38,7 +40,7 @@ function configurePushSub() {
     .then(newSub => {
       console.log("newSub", newSub);
       if (!newSub) return;
-      return fetch("https://cropchat-95fa2.firebaseio.com/subscriptions.json", {
+      return fetch(`${firebase.config.databaseURL}/subscriptions.json`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

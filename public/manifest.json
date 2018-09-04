@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "/pwa-with-vue-cli3",
   "display": "fullscreen",
   "background_color": "#000000",
   "theme_color": "#4DBA87"
