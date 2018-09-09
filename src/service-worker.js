@@ -57,6 +57,16 @@ workbox.routing.registerRoute(
   "GET"
 );
 
+// eslint-disable-next-line
+workbox.routing.registerRoute(
+  new RegExp(
+    "https://us-central1-cropchat-95fa2.cloudfunctions.net/createPost"
+  ),
+  // eslint-disable-next-line
+  workbox.strategies.networkFirst(),
+  "POST"
+);
+
 self.addEventListener("notificationclick", event => {
   console.log("notification clicked");
   var notification = event.notification;
@@ -118,3 +128,88 @@ self.addEventListener("push", event => {
 
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
+
+// In order to serve offline content, I added a fetch handler
+self.addEventListener("fetch", event => {
+  var url = "https://api.thecatapi.com/v1/images/search";
+
+  console.log("Fetch: ", event.request);
+  if (event.request.url.indexOf(url) > -1) {
+    console.log("check in cache");
+    var respo;
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          respo = res;
+          return res.json();
+        })
+        .then(data => {
+          writeData("cat", data);
+          return respo;
+        })
+        .catch(err => {
+          console.log(err);
+          caches.match(event.request).then(response => {
+            // Cache hit - return response
+            if (response) {
+              return response;
+            }
+            return Promise.reject(err);
+          });
+        })
+    );
+  }
+});
+
+var dbPromise = null;
+//check for support
+if ("indexedDB" in self) {
+  console.log("This browser support IndexedDB");
+
+  dbPromise = indexedDB.open("cats-store", 1, db => {
+    if (!db.objectStoreNames.contains("cats")) {
+      db.createObjectStore("cats", { keyPath: "id" });
+    }
+  });
+
+  console.log("IndexedDB is: ", dbPromise);
+}
+
+// eslint-disable-next-line
+function writeData (st, data) {
+  return dbPromise.then(db => {
+    var tx = db.transaction(st, "readwrite");
+    var store = tx.objectStore(st);
+    store.put(data);
+    return tx.complete;
+  });
+}
+
+// eslint-disable-next-line
+function readAllData (st) {
+  return dbPromise.then(db => {
+    var tx = db.transaction(st, "readonly");
+    var store = tx.objectStore(st);
+    return store.getAll();
+  });
+}
+
+// eslint-disable-next-line
+function clearAllData (st) {
+  return dbPromise.then(db => {
+    var tx = db.transaction(st, "readwrite");
+    var store = tx.objectStore(st);
+    store.clear();
+    return tx.complete;
+  });
+}
+
+// eslint-disable-next-line
+function deleteItemFromData (st, id) {
+  return dbPromise.then(db => {
+    var tx = db.transaction(st, "readwrite");
+    var store = tx.objectStore(st);
+    store.delete(id);
+    return tx.complete;
+  });
+}

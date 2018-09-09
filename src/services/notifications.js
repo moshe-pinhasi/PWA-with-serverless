@@ -5,6 +5,8 @@ const firebase = config["firebase"];
 
 if ("Notification" in window) {
   console.log("Notification is supported!");
+
+  // if you using sw, better to add this "navigator.serviceWorker.ready" before the request to permissions
   Notification.requestPermission(results => {
     console.log(results);
     if (results === "denied") {
