@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prod": "npm run build && serve dist/",
     "serve": "vue-cli-service serve --open --https",
     "build": "vue-cli-service build",
     "deploy": "BUILD_FOR=github-pages vue-cli-service build --mode production",

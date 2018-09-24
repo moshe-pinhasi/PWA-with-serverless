@@ -52,10 +52,13 @@ export default {
     axios
       .get(catApiConfig.searchURL)
       .then(res => {
+        console.log(res);
         this.catUrl = res.data[0].url;
         this.loading = false;
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.error("Post.vue:", err);
+      });
   },
   methods: {
     post() {

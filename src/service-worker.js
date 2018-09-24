@@ -129,35 +129,34 @@ self.addEventListener("push", event => {
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
+const CACHE_DYNAMIC_NAME = "dymanic-cache";
+
+const searchRequestHandler = event => {
+  event.respondWith(
+    fetch(event.request)
+      .then(res => {
+        return caches.open(CACHE_DYNAMIC_NAME).then(cache => {
+          cache.put(event.request.url, res.clone());
+          return res;
+        });
+      })
+      .catch(err => {
+        return caches.match(event.request).then(response => {
+          if (response) return response;
+
+          return Promise.reject(err);
+        });
+      })
+  );
+};
+
 // In order to serve offline content, I added a fetch handler
 self.addEventListener("fetch", event => {
   var url = "https://api.thecatapi.com/v1/images/search";
 
   console.log("Fetch: ", event.request);
   if (event.request.url.indexOf(url) > -1) {
-    console.log("check in cache");
-    var respo;
-    event.respondWith(
-      fetch(event.request)
-        .then(res => {
-          respo = res;
-          return res.json();
-        })
-        .then(data => {
-          writeData("cat", data);
-          return respo;
-        })
-        .catch(err => {
-          console.log(err);
-          caches.match(event.request).then(response => {
-            // Cache hit - return response
-            if (response) {
-              return response;
-            }
-            return Promise.reject(err);
-          });
-        })
-    );
+    searchRequestHandler(event);
   }
 });
 
@@ -166,50 +165,63 @@ var dbPromise = null;
 if ("indexedDB" in self) {
   console.log("This browser support IndexedDB");
 
-  dbPromise = indexedDB.open("cats-store", 1, db => {
-    if (!db.objectStoreNames.contains("cats")) {
-      db.createObjectStore("cats", { keyPath: "id" });
+  dbPromise = indexedDB.open("cats-store", 1);
+  dbPromise.onupgradeneeded = event => {
+    console.log("onupgradeneeded");
+    var db = event.target.result;
+    if (!db.objectStoreNames.contains("cat")) {
+      db.createObjectStore("cat", { autoIncrement: true });
     }
-  });
+  };
+}
 
-  console.log("IndexedDB is: ", dbPromise);
+function getStore(st, permissions) {
+  return new Promise(resolve => {
+    var db = dbPromise.result;
+    var tx = db.transaction([st], permissions);
+    resolve(tx.objectStore(st));
+  });
 }
 
 // eslint-disable-next-line
 function writeData (st, data) {
-  return dbPromise.then(db => {
-    var tx = db.transaction(st, "readwrite");
-    var store = tx.objectStore(st);
+  return getStore(st, "readwrite").then(store => {
     store.put(data);
-    return tx.complete;
   });
 }
 
 // eslint-disable-next-line
 function readAllData (st) {
-  return dbPromise.then(db => {
-    var tx = db.transaction(st, "readonly");
-    var store = tx.objectStore(st);
-    return store.getAll();
+  const res = [];
+  return new Promise((resolve, reject) => {
+    getStore(st, "readonly").then(store => {
+      var req = store.openCursor();
+
+      req.onerror = err => reject(err);
+
+      req.onsuccess = event => {
+        var cursor = event.target.result;
+        if (cursor) {
+          res.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(res.length > 0 ? res : null);
+        }
+      };
+    });
   });
 }
 
 // eslint-disable-next-line
 function clearAllData (st) {
-  return dbPromise.then(db => {
-    var tx = db.transaction(st, "readwrite");
-    var store = tx.objectStore(st);
+  return getStore(st, "readwrite").then(store => {
     store.clear();
-    return tx.complete;
   });
 }
 
 // eslint-disable-next-line
 function deleteItemFromData (st, id) {
-  return dbPromise.then(db => {
-    var tx = db.transaction(st, "readwrite");
-    var store = tx.objectStore(st);
+  return getStore(st, "readwrite").then(store => {
     store.delete(id);
-    return tx.complete;
   });
 }

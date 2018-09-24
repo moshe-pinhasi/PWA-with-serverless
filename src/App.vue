@@ -1,23 +1,34 @@
 <template>
-  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-    <header class="mdl-layout__header">
-      <div class="mdl-layout__header-row">
-        <span class="mdl-layout-title">CropChat</span>
-      </div>
-    </header>
-    <div class="mdl-layout__drawer">
-      <span class="mdl-layout-title">CropChat</span>
-      <nav class="mdl-navigation">
-        <router-link class="mdl-navigation__link" to="/" @click.native="hideMenu">Home</router-link>
-        <router-link class="mdl-navigation__link" to="/post" @click.native="hideMenu">Post a picture</router-link>
-      </nav>
+  <div>
+    <div class="offline"
+         v-if="!isOnline">
+      offline mode
     </div>
-    <main class="mdl-layout__content">
-      <div class="page-content">
-        <router-view></router-view>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title">CropChat</span>
+        </div>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CropChat</span>
+        <nav class="mdl-navigation">
+          <router-link class="mdl-navigation__link"
+                       to="/"
+                       @click.native="hideMenu">Home</router-link>
+          <router-link class="mdl-navigation__link"
+                       to="/post"
+                       @click.native="hideMenu">Post a picture</router-link>
+        </nav>
       </div>
-    </main>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          <router-view></router-view>
+        </div>
+      </main>
+    </div>
   </div>
+
 </template>
 
 <script>
@@ -33,6 +44,11 @@ export default {
         .getElementsByClassName("mdl-layout__obfuscator")[0]
         .classList.remove("is-visible");
     }
+  },
+  computed: {
+    isOnline() {
+      return this.$store.getters.isOnline;
+    }
   }
 };
 </script>
@@ -40,4 +56,10 @@ export default {
 <style lang="scss">
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 @import url("https://code.getmdl.io/1.2.1/material.blue-red.min.css");
+
+.offline {
+  background-color: #ffa09b;
+  color: white;
+  text-align: center;
+}
 </style>
