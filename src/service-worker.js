@@ -130,65 +130,65 @@ self.addEventListener("push", event => {
 });
 
 const searchRequestHandler = event => {
-  var respo;
+  //   var respo;
+  //   event.respondWith(
+  //     fetch(event.request)
+  //       .then(res => {
+  //         respo = res.clone();
+  //         return res.json();
+  //       })
+  //       .then(data => {
+  //         return clearAllData("cat").then(() => {
+  //           return writeData("cat", data[0]);
+  //         });
+  //       })
+  //       .then(() => {
+  //         return respo;
+  //       })
+  //       .catch(err => {
+  //         return readAllData("cat").then(response => {
+  //           if (response) {
+  //             return new Response(JSON.stringify(response), {
+  //               status: 200,
+  //               ok: true,
+  //               headers: { "Content-Type": "application/json" }
+  //             });
+  //           }
+
+  //           return Promise.reject(err);
+  //         });
+  //       })
+  //   );
+
+  const CACHE_DYNAMIC_NAME = "dymanic-cache";
   event.respondWith(
     fetch(event.request)
       .then(res => {
-        respo = res.clone();
-        return res.json();
-      })
-      .then(data => {
-        return clearAllData("cat").then(() => {
-          return writeData("cat", data[0]);
+        return caches.open(CACHE_DYNAMIC_NAME).then(cache => {
+          cache.put(event.request.url, res.clone());
+          return res;
         });
       })
-      .then(() => {
-        return respo;
-      })
       .catch(err => {
-        return readAllData("cat").then(response => {
-          if (response) {
-            return new Response(JSON.stringify(response), {
-              status: 200,
-              ok: true,
-              headers: { "Content-Type": "application/json" }
-            });
-          }
+        return caches.match(event.request).then(response => {
+          if (response) return response;
 
           return Promise.reject(err);
         });
       })
   );
-
-  // const CACHE_DYNAMIC_NAME = "dymanic-cache";
-  // event.respondWith(
-  // fetch(event.request)
-  //   .then(res => {
-  //     return caches.open(CACHE_DYNAMIC_NAME).then(cache => {
-  //       cache.put(event.request.url, res.clone());
-  //       return res;
-  //     });
-  //   })
-  //   .catch(err => {
-  //     return caches.match(event.request).then(response => {
-  //       if (response) return response;
-
-  //       return Promise.reject(err);
-  //     });
-  //   })
-  // );
 };
 
 // In order to serve offline content, I added a fetch handler
 self.addEventListener("fetch", event => {
-  var url = "https://api.thecatapi.com/v1/images/search";
+  const searchUrl = "https://api.thecatapi.com/v1/images/search";
 
-  console.log("Fetch: ", event.request);
-  if (event.request.url.indexOf(url) > -1) {
+  if (event.request.url.indexOf(searchUrl) > -1) {
     searchRequestHandler(event);
   }
 });
 
+/*
 var dbPromise = null;
 //check for support
 if ("indexedDB" in self) {
@@ -254,3 +254,4 @@ function deleteItemFromData (st, id) {
     store.delete(id);
   });
 }
+*/

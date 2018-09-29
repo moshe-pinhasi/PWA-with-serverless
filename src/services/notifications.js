@@ -8,7 +8,8 @@ if ("Notification" in window) {
 
   // if you using sw, better to add this "navigator.serviceWorker.ready" before the request to permissions
   Notification.requestPermission(results => {
-    console.log(results);
+    console.log("notifications permisstions: ", results);
+
     if (results === "denied") {
       console.log("notifications permisstions denied!");
       return;

@@ -10,28 +10,41 @@
           <div class="image-card__picture">
             <img :src="picture.url" />
           </div>
-          <div class="image-card__comment mdl-card__actions">
-            <span>{{ picture.comment }}</span>
+            <div class="image-card__comment mdl-card__actions">
+              <span>{{ picture.comment }}</span>
+            </div>
           </div>
         </div>
       </div>
+      <router-link class="add-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
+                   to="/post">
+        <i class="material-icons">add</i>
+      </router-link>
+      <router-link class="take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
+                   to="/camera">
+        <i class="material-icons">camera_alt</i>
+      </router-link>
     </div>
-    <router-link class="add-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
-                 to="/post">
-      <i class="material-icons">add</i>
-    </router-link>
-    <router-link class="take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
-                 to="/camera">
-      <i class="material-icons">camera_alt</i>
-    </router-link>
-  </div>
 </template>
 
 <script>
+import dbService from "@/services/dbService.js";
+
 export default {
+  data() {
+    return {
+      catsToShow: []
+    };
+  },
+  created() {
+    this.getCats();
+  },
   computed: {
     cats() {
-      return this.getCats();
+      return this.catsToShow;
+    },
+    isOnline() {
+      return this.$store.getters.isOnline;
     }
   },
   methods: {
@@ -39,31 +52,43 @@ export default {
       this.$router.push({ name: "detail", params: { id: id } });
     },
     getCats() {
-      return this.$root.cat;
+      if (this.isOnline) {
+        this.catsToShow = this.$root.cat;
+        this.saveCatsToCache();
+      } else {
+        dbService.readAllData("cats").then(res => {
+          this.catsToShow = res[0];
+        });
+      }
+
+      // or use the local storage
 
       // if (navigator.onLine) {
+      //   this.catsToShow = this.$root.cat;
       //   this.saveCatsToCache();
-      //   return this.$root.cat;
       // } else {
-      //   return JSON.parse(localStorage.getItem("cats"));
+      //   this.catsToShow = JSON.parse(localStorage.getItem("cats"));
       // }
+    },
+    saveCatsToCache() {
+      dbService.clearAllData("cats").then(() => {
+        this.$root.$firebaseRefs.cat
+          .orderByChild("created_at")
+          .once("value", snapchot => {
+            let cachedCats = [];
+            snapchot.forEach(catSnapchot => {
+              let cachedCat = catSnapchot.val();
+              cachedCat[".key"] = catSnapchot.key;
+              cachedCats.push(cachedCat);
+            });
+
+            dbService.writeData("cats", cachedCats);
+
+            // or use the local storage
+            //localStorage.setItem("cats", JSON.stringify(cachedCats));
+          });
+      });
     }
-    // saveCatsToCache() {
-    //   this.$root.$firebaseRefs.cat
-    //     .orderByChild("created_at")
-    //     .once("value", snapchot => {
-    //       let cachedCats = [];
-    //       snapchot.forEach(catSnapchot => {
-    //         let cachedCat = catSnapchot.val();
-    //         cachedCat[".key"] = catSnapchot.key;
-    //         cachedCats.push(cachedCat);
-    //       });
-    //       localStorage.setItem("cats", JSON.stringify(cachedCats));
-    //     });
-    // }
-  },
-  mounted() {
-    // this.saveCatsToCache();
   }
 };
 </script>

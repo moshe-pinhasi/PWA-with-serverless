@@ -1,30 +1,33 @@
 <template>
   <form>
     <div class="mdl-grid">
-      <div class="mdl-cell mdl-cell--8-col">
+      <div v-if="errorMessage"
+           class="mdl-cell mdl-cell--8-col">{{errorMessage}}</div>
+      <div v-else
+           class="mdl-cell mdl-cell--8-col">
         <div class="card-image__picture">
           <div v-if="loading">Loading...</div>
           <img v-else
                :src="this.catUrl" />
         </div>
-      </div>
-      <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet">
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-upgraded is-dirty">
-          <input id="username"
+        </div>
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label is-upgraded is-dirty">
+            <input id="username"
                  v-model="title"
                  type="text"
                  class="mdl-textfield__input" />
-          <label for="username"
-                 class="mdl-textfield__label">Describe me</label>
-        </div>
-        <div class="actions">
-          <a @click.prevent="post"
-             class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-            POST A CAT
-          </a>
+            <label for="username"
+                   class="mdl-textfield__label">Describe me</label>
+          </div>
+          <div class="actions">
+            <a @click.prevent="post"
+               class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+              POST A CAT
+            </a>
+          </div>
         </div>
       </div>
-    </div>
   </form>
 </template>
 
@@ -40,7 +43,8 @@ export default {
     return {
       catUrl: null,
       title: "",
-      loading: false
+      loading: false,
+      errorMessage: ""
     };
   },
   mixins: [postCat],
@@ -58,11 +62,19 @@ export default {
       })
       .catch(err => {
         console.error("Post.vue:", err);
+        if (this.isOnline)
+          this.errorMessage =
+            "Couldn't load data, it seems that you are offline";
       });
   },
   methods: {
     post() {
       this.postCat(this.catUrl, this.title).then(this.$router.push("/"));
+    }
+  },
+  computed: {
+    isOnline() {
+      return this.$store.getters.isOnline;
     }
   }
 };

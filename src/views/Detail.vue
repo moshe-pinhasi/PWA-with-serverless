@@ -4,50 +4,82 @@
       <div class="picture">
         <img :src="cat.url" />
       </div>
-      <div class="info">
-        <span>{{ cat.info }}</span>
+        <div class="info">
+          <span>{{ cat.info }}</span>
+        </div>
+      </div>
+      <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet">
+        <div class="comment">
+          <span>{{ cat.comment }}</span>
+        </div>
+        <div class="actions">
+          <router-link class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+                       to="/post">
+            ANSWER
+          </router-link>
+        </div>
       </div>
     </div>
-    <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet">
-      <div class="comment">
-        <span>{{ cat.comment }}</span>
-      </div>
-      <div class="actions">
-        <router-link class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
-                     to="/post">
-          ANSWER
-        </router-link>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
 import { find } from "lodash";
+import dbService from "@/services/dbService";
 
 export default {
+  data() {
+    return {
+      catToShow: {}
+    };
+  },
+  created() {
+    this.loadCat();
+  },
   computed: {
     cat() {
-      return this.getCat();
+      return this.catToShow;
+    },
+    isOnline() {
+      return this.$store.getters.isOnline;
     }
   },
   methods: {
-    getCat() {
-      if (navigator.onLine) {
-        const cat = find(
+    loadCat() {
+      if (this.isOnline) {
+        this.catToShow = find(
           this.$root.cat,
           cat => cat[".key"] === this.$route.params.id
         );
-        return cat;
       } else {
-        const cats = this.loadCatsFromCache();
-        const cat = find(cats, cat => cat[".key"] === this.$route.params.id);
-        return cat;
+        this.loadCatsFromCache().then(cats => {
+          this.catToShow = find(
+            cats,
+            cat => cat[".key"] === this.$route.params.id
+          );
+        });
       }
     },
     loadCatsFromCache() {
-      return JSON.parse(localStorage.getItem("cats"));
+      return dbService.readAllData("cats").then(res => res[0]);
     }
+
+    // load from local storage
+    // getCat() {
+    //   if (navigator.onLine) {
+    //     const cat = find(
+    //       this.$root.cat,
+    //       cat => cat[".key"] === this.$route.params.id
+    //     );
+    //     return cat;
+    //   } else {
+    //     const cats = this.loadCatsFromCache();
+    //     const cat = find(cats, cat => cat[".key"] === this.$route.params.id);
+    //     return cat;
+    //   }
+    // },
+    // loadCatsFromCache() {
+    //   return JSON.parse(localStorage.getItem("cats"));
+    // }
   }
 };
 </script>
