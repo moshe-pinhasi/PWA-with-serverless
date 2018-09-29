@@ -4,12 +4,18 @@ var dbPromise = null;
 if ("indexedDB" in window) {
   console.log("This browser support IndexedDB");
 
-  request = indexedDB.open("cats-store", 1);
+  request = indexedDB.open("cats-store", 5);
   request.onupgradeneeded = event => {
     console.log("onupgradeneeded");
     var db = event.target.result;
     if (!db.objectStoreNames.contains("cats")) {
       db.createObjectStore("cats", { autoIncrement: true });
+    }
+
+    if (!db.objectStoreNames.contains("post-requests")) {
+      db.createObjectStore("post-requests", {
+        autoIncrement: true
+      });
     }
   };
 
@@ -45,8 +51,7 @@ function openCursor(store) {
   });
 }
 
-function getStore(st, permissions, tag) {
-  console.log("store requested", tag);
+function getStore(st, permissions) {
   if (!dbPromise) Promise.reject("This browser is not supported IndexedDB");
 
   return dbPromise.then(db => {
@@ -57,28 +62,26 @@ function getStore(st, permissions, tag) {
 
 // eslint-disable-next-line
 function writeData (st, data) {
-  return getStore(st, "readwrite", "writeData").then(store => {
+  return getStore(st, "readwrite").then(store => {
     store.put(data);
   });
 }
 
 // eslint-disable-next-line
 function readAllData (st) {
-  return getStore(st, "readonly", "readAllData").then(store =>
-    openCursor(store)
-  );
+  return getStore(st, "readonly").then(store => openCursor(store));
 }
 
 // eslint-disable-next-line
 function clearAllData (st) {
-  return getStore(st, "readwrite", "clearAllData").then(store => {
+  return getStore(st, "readwrite").then(store => {
     store.clear();
   });
 }
 
 // eslint-disable-next-line
 function deleteItemFromData (st, id) {
-  return getStore(st, "readwrite", "deleteItemFromData").then(store => {
+  return getStore(st, "readwrite").then(store => {
     store.delete(id);
   });
 }

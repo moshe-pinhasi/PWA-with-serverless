@@ -56,7 +56,6 @@ export default {
     axios
       .get(catApiConfig.searchURL)
       .then(res => {
-        console.log(res);
         this.catUrl = res.data[0].url;
         this.loading = false;
       })
@@ -69,7 +68,9 @@ export default {
   },
   methods: {
     post() {
-      this.postCat(this.catUrl, this.title).then(this.$router.push("/"));
+      this.postCat(this.catUrl, this.title)
+        .then(() => this.$router.push("/"))
+        .catch(err => console.log(err));
     }
   },
   computed: {

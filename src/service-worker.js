@@ -129,6 +129,51 @@ self.addEventListener("push", event => {
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
+self.addEventListener("message", event => {
+  console.log("message data", event.data);
+
+  if (event.data.sync === "post-requests") {
+    // receives form data from postMessage upon submission
+    writeData("post-requests", event.data);
+  }
+});
+
+self.addEventListener("sync", event => {
+  console.log("now online");
+
+  if (event.tag === "post-requests") {
+    self.registration.showNotification("Sync event fired!");
+
+    event.waitUntil(
+      readAllData("post-requests").then(res => {
+        if (!res) return;
+
+        for (var dt of res) {
+          fetch(dt.url, {
+            method: dt.method,
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify({
+              url: dt.data.url,
+              comment: dt.data.comment,
+              info: dt.data.info
+            })
+          })
+            .then(res => res.json())
+            .then(() => {
+              deleteItemFromData("post-requests", dt.id);
+            })
+            .catch(err => {
+              console.log("could not add cat from sync", err);
+            });
+        }
+      })
+    );
+  }
+});
+
 const searchRequestHandler = event => {
   //   var respo;
   //   event.respondWith(
@@ -183,10 +228,89 @@ const searchRequestHandler = event => {
 self.addEventListener("fetch", event => {
   const searchUrl = "https://api.thecatapi.com/v1/images/search";
 
+  console.log("fetch", event);
   if (event.request.url.indexOf(searchUrl) > -1) {
     searchRequestHandler(event);
   }
 });
+
+var request = null;
+var dbPromise = null;
+//check for support
+if ("indexedDB" in self) {
+  console.log("This browser support IndexedDB");
+
+  request = indexedDB.open("cats-store");
+
+  dbPromise = new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      console.log("dbPromise open successed");
+      resolve(request.result);
+    };
+
+    request.onerror = err => {
+      console.log("dbPromise had an error", err);
+      reject(request.error);
+    };
+  });
+}
+
+function openCursor(store) {
+  const res = [];
+  return new Promise((resolve, reject) => {
+    var req = store.openCursor();
+
+    req.onerror = err => reject(err);
+
+    req.onsuccess = event => {
+      var cursor = event.target.result;
+      if (cursor) {
+        res.push(Object.assign({}, cursor.value, { id: cursor.key }));
+        cursor.continue();
+      } else {
+        resolve(res.length > 0 ? res : null);
+      }
+    };
+  });
+}
+
+function getStore(st, permissions, tag) {
+  console.log("store requested", tag);
+  if (!dbPromise) Promise.reject("This browser is not supported IndexedDB");
+
+  return dbPromise.then(db => {
+    var tx = db.transaction([st], permissions);
+    return tx.objectStore(st);
+  });
+}
+
+// eslint-disable-next-line
+function writeData (st, data) {
+  return getStore(st, "readwrite", "writeData").then(store => {
+    store.put(data);
+  });
+}
+
+// eslint-disable-next-line
+function readAllData (st) {
+  return getStore(st, "readonly", "readAllData").then(store =>
+    openCursor(store)
+  );
+}
+
+// eslint-disable-next-line
+function clearAllData (st) {
+  return getStore(st, "readwrite", "clearAllData").then(store => {
+    store.clear();
+  });
+}
+
+// eslint-disable-next-line
+function deleteItemFromData (st, id) {
+  return getStore(st, "readwrite", "deleteItemFromData").then(store => {
+    store.delete(id);
+  });
+}
 
 /*
 var dbPromise = null;

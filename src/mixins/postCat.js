@@ -2,14 +2,29 @@ import axios from "axios";
 import firebaseService from "@/services/firebase";
 import config from "../../config";
 const firebaseConfig = config["firebase"];
+const createPostURL = firebaseConfig.functions.createPostURL;
 
 const postCat = {
   methods: {
     postCat(catUrl, title) {
-      return axios.post(firebaseConfig.functions.createPostURL, {
+      const cat = {
         url: catUrl,
         comment: title,
         info: "Posted by Charles on Tuesday"
+      };
+
+      return axios.post(createPostURL, cat).catch(err => {
+        if (!navigator.serviceWorker.controller) throw err;
+
+        navigator.serviceWorker.controller.postMessage({
+          sync: "post-requests",
+          data: cat,
+          url: createPostURL,
+          method: "POST"
+        });
+        return navigator.serviceWorker.ready.then(reg => {
+          reg.sync.register("post-requests");
+        });
       });
 
       // example how you can post directly to db using the firebase ($firebaseRefs.cat - see in main.js)

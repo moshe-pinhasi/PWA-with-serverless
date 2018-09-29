@@ -57,7 +57,9 @@ export default {
         this.saveCatsToCache();
       } else {
         dbService.readAllData("cats").then(res => {
-          this.catsToShow = res[0];
+          if (res) {
+            this.catsToShow = res[0];
+          }
         });
       }
 
