@@ -1,4 +1,4 @@
-# A progressive web application with vue-js using cli3
+# A progressive web application with serverless (functions) using firebase
 
 the code based on [this](https://blog.sicara.com/a-progressive-web-application-with-vue-js-webpack-material-design-part-1-c243e2e6e402) article.
 
